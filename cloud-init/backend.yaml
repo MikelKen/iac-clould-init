@@ -1,0 +1,64 @@
+#cloud-config
+
+package_update: true
+
+packages:
+  - git
+  - curl
+  - ca-certificates
+  - gnupg
+
+write_files:
+  - path: /usr/local/sbin/setup-backend.sh
+    owner: root:root
+    permissions: "0750"
+    content: |
+      #!/usr/bin/env bash
+      set -Eeuo pipefail
+
+      exec > >(tee -a /var/log/setup-backend.log) 2>&1
+
+      echo "=== Iniciando configuracion BACKEND ==="
+
+      REPO_URL="https://github.com/Joandrr/asistencia-backend.git"
+      REPO_BRANCH="dev"
+      REPO_COMMIT="3685f05cb14695684bcb3b2d82bc2ea6e20754e8"
+      APP_DIR="/opt/asistencia-backend"
+
+      # Instalar Node.js 24
+      echo "Instalando Node.js 24..."
+      curl -fsSL \
+        https://deb.nodesource.com/setup_24.x \
+        -o /tmp/nodesource_setup.sh
+
+      bash /tmp/nodesource_setup.sh
+      apt-get install -y nodejs
+
+      node --version
+      npm --version
+
+      # Clonar repositorio
+      echo "Clonando backend..."
+      git clone --branch "$REPO_BRANCH" \
+        "$REPO_URL" "$APP_DIR"
+
+      cd "$APP_DIR"
+
+      # Fijar version exacta
+      git checkout --detach "$REPO_COMMIT"
+
+      ACTUAL_COMMIT="$(git rev-parse HEAD)"
+      test "$ACTUAL_COMMIT" = "$REPO_COMMIT"
+
+      # Instalar dependencias
+      echo "Instalando dependencias..."
+      npm ci --no-audit --no-fund
+
+      # Registrar resultado
+      echo "$ACTUAL_COMMIT" > /opt/backend-commit.txt
+      touch /opt/backend-install-success
+
+      echo "=== BACKEND configurado correctamente ==="
+
+runcmd:
+  - [bash, /usr/local/sbin/setup-backend.sh]

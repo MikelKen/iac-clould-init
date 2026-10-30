@@ -1,0 +1,64 @@
+#cloud-config
+
+package_update: true
+
+packages:
+  - git
+  - curl
+  - ca-certificates
+  - gnupg
+
+write_files:
+  - path: /usr/local/sbin/setup-frontend.sh
+    owner: root:root
+    permissions: "0750"
+    content: |
+      #!/usr/bin/env bash
+      set -Eeuo pipefail
+
+      exec > >(tee -a /var/log/setup-frontend.log) 2>&1
+
+      echo "=== Iniciando configuracion FRONTEND ==="
+
+      REPO_URL="https://github.com/Joandrr/asistencia-front.git"
+      REPO_BRANCH="dev"
+      REPO_COMMIT="09fc1e32d454caa98803de726a659a8b463ceff1"
+      APP_DIR="/opt/asistencia-front"
+
+      # Instalar Node.js 24
+      echo "Instalando Node.js 24..."
+      curl -fsSL \
+        https://deb.nodesource.com/setup_24.x \
+        -o /tmp/nodesource_setup.sh
+
+      bash /tmp/nodesource_setup.sh
+      apt-get install -y nodejs
+
+      node --version
+      npm --version
+
+      # Clonar repositorio
+      echo "Clonando frontend..."
+      git clone --branch "$REPO_BRANCH" \
+        "$REPO_URL" "$APP_DIR"
+
+      cd "$APP_DIR"
+
+      # Fijar version exacta
+      git checkout --detach "$REPO_COMMIT"
+
+      ACTUAL_COMMIT="$(git rev-parse HEAD)"
+      test "$ACTUAL_COMMIT" = "$REPO_COMMIT"
+
+      # Instalar dependencias
+      echo "Instalando dependencias..."
+      npm ci --no-audit --no-fund
+
+      # Registrar resultado
+      echo "$ACTUAL_COMMIT" > /opt/frontend-commit.txt
+      touch /opt/frontend-install-success
+
+      echo "=== FRONTEND configurado correctamente ==="
+
+runcmd:
+  - [bash, /usr/local/sbin/setup-frontend.sh]

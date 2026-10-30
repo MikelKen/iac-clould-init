@@ -1,0 +1,38 @@
+project:
+  name: iac-cloud-init
+  environment: lab
+  region: us-east-2
+
+aws:
+  vpc_id: vpc-0f94518e44a06f3cb
+
+compute:
+  ami:
+    os: ubuntu
+    version: "24.04"
+    architecture: amd64
+
+  instance_type: t3.micro
+  volume_size: 20
+  volume_type: gp3
+
+runtime:
+  node_major: 24
+  package_manager: npm
+
+servers:
+  frontend:
+    subnet_id: subnet-027102a64b0e792b7
+    repository: https://github.com/Joandrr/asistencia-front.git
+    branch: dev
+    commit: 09fc1e32d454caa98803de726a659a8b463ceff1
+    install_dir: /opt/asistencia-front
+    cloud_init: cloud-init/frontend.yaml
+
+  backend:
+    subnet_id: subnet-0c11c6c0fad580409
+    repository: https://github.com/Joandrr/asistencia-backend.git
+    branch: dev
+    commit: 3685f05cb14695684bcb3b2d82bc2ea6e20754e8
+    install_dir: /opt/asistencia-backend
+    cloud_init: cloud-init/backend.yaml

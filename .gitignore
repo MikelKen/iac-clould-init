@@ -1,0 +1,37 @@
+﻿# Node.js
+node_modules/
+npm-debug.log*
+
+# Pulumi
+.pulumi/
+pulumi/Pulumi.*.yaml
+!pulumi/Pulumi.yaml
+
+# OpenTofu / Terraform
+.terraform/
+# .terraform.lock.hcl
+.tofu/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+*.tfvars
+*.tfvars.json
+
+# AWS
+.aws/
+*.pem
+*.key
+
+# Configuracion local y secretos
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
