@@ -1,0 +1,6 @@
+name: iac-cloud-init
+runtime:
+  name: nodejs
+  options:
+    typescript: true
+description: Infraestructura AWS con dos EC2 y cloud-init
