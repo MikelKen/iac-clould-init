@@ -4,6 +4,7 @@ npm-debug.log*
 
 # Pulumi
 .pulumi/
+pulumi/node_modules/
 pulumi/Pulumi.*.yaml
 !pulumi/Pulumi.yaml
 

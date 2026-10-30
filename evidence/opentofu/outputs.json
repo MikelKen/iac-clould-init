@@ -1,0 +1,32 @@
+﻿{
+  "backend_instance_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "i-0265d7d15859d10ee"
+  },
+  "backend_private_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "172.31.16.232"
+  },
+  "backend_public_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "3.129.206.106"
+  },
+  "frontend_instance_id": {
+    "sensitive": false,
+    "type": "string",
+    "value": "i-0b4a1c6a892100785"
+  },
+  "frontend_private_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "172.31.1.84"
+  },
+  "frontend_public_ip": {
+    "sensitive": false,
+    "type": "string",
+    "value": "3.148.162.243"
+  }
+}
