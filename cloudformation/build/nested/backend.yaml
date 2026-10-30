@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: EC2 Backend NestJS con cloud-init
+
+Parameters:
+  ProjectName:
+    Type: String
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+  UbuntuAmi:
+    Type: AWS::EC2::Image::Id
+  InstanceType:
+    Type: String
+  VolumeSize:
+    Type: Number
+  SshCidr:
+    Type: String
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+  BackendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SSH laboratorio backend
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SshCidr
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: cloudformation
+        - Key: Role
+          Value: backend
+
+  BackendEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref UbuntuAmi
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+
+      NetworkInterfaces:
+        - DeviceIndex: "0"
+          SubnetId: !Ref SubnetId
+          AssociatePublicIpAddress: true
+          GroupSet:
+            - !Ref BackendSecurityGroup
+
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp3
+            DeleteOnTermination: true
+
+      UserData:
+        Fn::Base64: |
+          #cloud-config
+          
+          package_update: true
+          
+          packages:
+            - git
+            - curl
+            - ca-certificates
+            - gnupg
+          
+          write_files:
+            - path: /usr/local/sbin/setup-backend.sh
+              owner: root:root
+              permissions: "0750"
+              content: |
+                #!/usr/bin/env bash
+                set -Eeuo pipefail
+          
+                exec > >(tee -a /var/log/setup-backend.log) 2>&1
+          
+                echo "=== Iniciando configuracion BACKEND ==="
+          
+                REPO_URL="https://github.com/Joandrr/asistencia-backend.git"
+                REPO_BRANCH="dev"
+                REPO_COMMIT="3685f05cb14695684bcb3b2d82bc2ea6e20754e8"
+                APP_DIR="/opt/asistencia-backend"
+          
+                # Instalar Node.js 24
+                echo "Instalando Node.js 24..."
+                curl -fsSL \
+                  https://deb.nodesource.com/setup_24.x \
+                  -o /tmp/nodesource_setup.sh
+          
+                bash /tmp/nodesource_setup.sh
+                apt-get install -y nodejs
+          
+                node --version
+                npm --version
+          
+                # Clonar repositorio
+                echo "Clonando backend..."
+                git clone --branch "$REPO_BRANCH" \
+                  "$REPO_URL" "$APP_DIR"
+          
+                cd "$APP_DIR"
+          
+                # Fijar version exacta
+                git checkout --detach "$REPO_COMMIT"
+          
+                ACTUAL_COMMIT="$(git rev-parse HEAD)"
+                test "$ACTUAL_COMMIT" = "$REPO_COMMIT"
+          
+                # Instalar dependencias
+                echo "Instalando dependencias..."
+                npm ci --no-audit --no-fund
+          
+                # Registrar resultado
+                echo "$ACTUAL_COMMIT" > /opt/backend-commit.txt
+                touch /opt/backend-install-success
+          
+                echo "=== BACKEND configurado correctamente ==="
+          
+          runcmd:
+            - [bash, /usr/local/sbin/setup-backend.sh]
+
+      Tags:
+        - Key: Name
+          Value: iac-cloud-init-backend
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: cloudformation
+        - Key: Role
+          Value: backend
+
+Outputs:
+  InstanceId:
+    Value: !Ref BackendEC2
+
+  PublicIp:
+    Value: !GetAtt BackendEC2.PublicIp
+
+  PrivateIp:
+    Value: !GetAtt BackendEC2.PrivateIp

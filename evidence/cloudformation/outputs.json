@@ -1,0 +1,26 @@
+﻿[
+    {
+        "OutputKey": "FrontendInstanceId",
+        "OutputValue": "i-0b6efb2bb2eff9332"
+    },
+    {
+        "OutputKey": "BackendPublicIp",
+        "OutputValue": "18.216.105.161"
+    },
+    {
+        "OutputKey": "BackendPrivateIp",
+        "OutputValue": "172.31.23.146"
+    },
+    {
+        "OutputKey": "FrontendPublicIp",
+        "OutputValue": "16.59.62.32"
+    },
+    {
+        "OutputKey": "FrontendPrivateIp",
+        "OutputValue": "172.31.6.154"
+    },
+    {
+        "OutputKey": "BackendInstanceId",
+        "OutputValue": "i-0426c7d78bd4d5fb1"
+    }
+]

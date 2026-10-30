@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Dos EC2 con Nested Stacks y cloud-init
+Parameters:
+  ProjectName:
+    Type: String
+    Default: iac-cloud-init
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  FrontendSubnetId:
+    Type: AWS::EC2::Subnet::Id
+  BackendSubnetId:
+    Type: AWS::EC2::Subnet::Id
+  UbuntuAmi:
+    Type: AWS::EC2::Image::Id
+  InstanceType:
+    Type: String
+    Default: t3.micro
+  VolumeSize:
+    Type: Number
+    Default: 20
+  SshCidr:
+    Type: String
+    Default: 0.0.0.0/0
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+Resources:
+  FrontendStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 
+        https://s3.us-east-2.amazonaws.com/iac-cloudinit-cfn-170101435970-us-east-2/iac-cloud-init/bad8634705df4961112688285a161001.template
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        VpcId:
+          Ref: VpcId
+        SubnetId:
+          Ref: FrontendSubnetId
+        UbuntuAmi:
+          Ref: UbuntuAmi
+        InstanceType:
+          Ref: InstanceType
+        VolumeSize:
+          Ref: VolumeSize
+        SshCidr:
+          Ref: SshCidr
+        KeyName:
+          Ref: KeyName
+  BackendStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 
+        https://s3.us-east-2.amazonaws.com/iac-cloudinit-cfn-170101435970-us-east-2/iac-cloud-init/026bf56bc46ca04bd4a73b31769b989b.template
+      Parameters:
+        ProjectName:
+          Ref: ProjectName
+        VpcId:
+          Ref: VpcId
+        SubnetId:
+          Ref: BackendSubnetId
+        UbuntuAmi:
+          Ref: UbuntuAmi
+        InstanceType:
+          Ref: InstanceType
+        VolumeSize:
+          Ref: VolumeSize
+        SshCidr:
+          Ref: SshCidr
+        KeyName:
+          Ref: KeyName
+Outputs:
+  FrontendInstanceId:
+    Value:
+      Fn::GetAtt:
+      - FrontendStack
+      - Outputs.InstanceId
+  FrontendPublicIp:
+    Value:
+      Fn::GetAtt:
+      - FrontendStack
+      - Outputs.PublicIp
+  FrontendPrivateIp:
+    Value:
+      Fn::GetAtt:
+      - FrontendStack
+      - Outputs.PrivateIp
+  BackendInstanceId:
+    Value:
+      Fn::GetAtt:
+      - BackendStack
+      - Outputs.InstanceId
+  BackendPublicIp:
+    Value:
+      Fn::GetAtt:
+      - BackendStack
+      - Outputs.PublicIp
+  BackendPrivateIp:
+    Value:
+      Fn::GetAtt:
+      - BackendStack
+      - Outputs.PrivateIp

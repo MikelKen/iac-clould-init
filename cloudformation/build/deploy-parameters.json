@@ -1,0 +1,38 @@
+[
+    {
+        "ParameterKey":  "ProjectName",
+        "ParameterValue":  "iac-cloud-init"
+    },
+    {
+        "ParameterKey":  "VpcId",
+        "ParameterValue":  "vpc-0f94518e44a06f3cb"
+    },
+    {
+        "ParameterKey":  "FrontendSubnetId",
+        "ParameterValue":  "subnet-027102a64b0e792b7"
+    },
+    {
+        "ParameterKey":  "BackendSubnetId",
+        "ParameterValue":  "subnet-0c11c6c0fad580409"
+    },
+    {
+        "ParameterKey":  "UbuntuAmi",
+        "ParameterValue":  "ami-0fc53b217ec1ad816"
+    },
+    {
+        "ParameterKey":  "InstanceType",
+        "ParameterValue":  "t3.micro"
+    },
+    {
+        "ParameterKey":  "VolumeSize",
+        "ParameterValue":  "20"
+    },
+    {
+        "ParameterKey":  "SshCidr",
+        "ParameterValue":  "0.0.0.0/0"
+    },
+    {
+        "ParameterKey":  "KeyName",
+        "ParameterValue":  "iac-cloudinit-cfn"
+    }
+]
