@@ -16,6 +16,14 @@ function createSecurityGroup(role: string) {
         cidrBlocks: [settings.sshCidr],
         description: "SSH desde IP autorizada",
       },
+      {
+          description: "HTTP publico - Nginx",
+          protocol: "tcp",
+          fromPort: 80,
+          toPort: 80,
+          cidrBlocks: ["0.0.0.0/0"],
+      }
+
     ],
 
     egress: [

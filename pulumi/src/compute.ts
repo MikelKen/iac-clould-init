@@ -50,6 +50,7 @@ function createServer(
     },
 
     userData: readCloudInit(cloudInitFile),
+    userDataReplaceOnChange: true,
 
     tags: {
       Name: `iac-cloud-init-${role}`,
