@@ -28,7 +28,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 
-        https://s3.us-east-2.amazonaws.com/iac-cloudinit-cfn-170101435970-us-east-2/iac-cloud-init/bad8634705df4961112688285a161001.template
+        https://s3.us-east-2.amazonaws.com/iac-cloudinit-cfn-170101435970-us-east-2/iac-cloud-init/9e5528cedfd2857190a050b620f04789.template
       Parameters:
         ProjectName:
           Ref: ProjectName
@@ -50,7 +50,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 
-        https://s3.us-east-2.amazonaws.com/iac-cloudinit-cfn-170101435970-us-east-2/iac-cloud-init/026bf56bc46ca04bd4a73b31769b989b.template
+        https://s3.us-east-2.amazonaws.com/iac-cloudinit-cfn-170101435970-us-east-2/iac-cloud-init/774138ec99ac364c60761cc9aaf8e6dd.template
       Parameters:
         ProjectName:
           Ref: ProjectName

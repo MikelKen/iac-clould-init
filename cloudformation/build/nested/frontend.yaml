@@ -4,18 +4,25 @@ Description: EC2 Frontend React con cloud-init
 Parameters:
   ProjectName:
     Type: String
+
   VpcId:
     Type: AWS::EC2::VPC::Id
+
   SubnetId:
     Type: AWS::EC2::Subnet::Id
+
   UbuntuAmi:
     Type: AWS::EC2::Image::Id
+
   InstanceType:
     Type: String
+
   VolumeSize:
     Type: Number
+
   SshCidr:
     Type: String
+
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
 
@@ -23,16 +30,26 @@ Resources:
   FrontendSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: SSH laboratorio frontend
+      GroupDescription: SSH y HTTP laboratorio frontend
       VpcId: !Ref VpcId
+
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: !Ref SshCidr
+          Description: SSH laboratorio
+
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP publico - Nginx
+
       SecurityGroupEgress:
         - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
+
       Tags:
         - Key: Project
           Value: !Ref ProjectName
@@ -73,6 +90,7 @@ Resources:
             - curl
             - ca-certificates
             - gnupg
+            - nginx
           
           write_files:
             - path: /usr/local/sbin/setup-frontend.sh
@@ -84,15 +102,16 @@ Resources:
           
                 exec > >(tee -a /var/log/setup-frontend.log) 2>&1
           
-                echo "=== Iniciando configuracion FRONTEND ==="
+                echo "=== Configurando FRONTEND ==="
           
                 REPO_URL="https://github.com/Joandrr/asistencia-front.git"
                 REPO_BRANCH="dev"
                 REPO_COMMIT="09fc1e32d454caa98803de726a659a8b463ceff1"
                 APP_DIR="/opt/asistencia-front"
+                WEB_DIR="/var/www/asistencia-front"
           
-                # Instalar Node.js 24
                 echo "Instalando Node.js 24..."
+          
                 curl -fsSL \
                   https://deb.nodesource.com/setup_24.x \
                   -o /tmp/nodesource_setup.sh
@@ -102,29 +121,76 @@ Resources:
           
                 node --version
                 npm --version
+                nginx -v
           
-                # Clonar repositorio
                 echo "Clonando frontend..."
+          
                 git clone --branch "$REPO_BRANCH" \
                   "$REPO_URL" "$APP_DIR"
           
                 cd "$APP_DIR"
           
-                # Fijar version exacta
                 git checkout --detach "$REPO_COMMIT"
           
                 ACTUAL_COMMIT="$(git rev-parse HEAD)"
                 test "$ACTUAL_COMMIT" = "$REPO_COMMIT"
           
-                # Instalar dependencias
                 echo "Instalando dependencias..."
                 npm ci --no-audit --no-fund
           
-                # Registrar resultado
-                echo "$ACTUAL_COMMIT" > /opt/frontend-commit.txt
-                touch /opt/frontend-install-success
+                echo "Compilando frontend..."
+                npm run build
           
-                echo "=== FRONTEND configurado correctamente ==="
+                test -f "$APP_DIR/dist/index.html"
+          
+                echo "Publicando archivos..."
+          
+                mkdir -p "$WEB_DIR"
+                cp -a "$APP_DIR/dist/." "$WEB_DIR/"
+          
+                chown -R www-data:www-data "$WEB_DIR"
+          
+                echo "Configurando Nginx..."
+          
+                cat > /etc/nginx/sites-available/asistencia-front <<'NGINX'
+                server {
+                    listen 80 default_server;
+                    listen [::]:80 default_server;
+          
+                    server_name _;
+          
+                    root /var/www/asistencia-front;
+                    index index.html;
+          
+                    location / {
+                        try_files $uri $uri/ /index.html;
+                    }
+                }
+                NGINX
+          
+                rm -f /etc/nginx/sites-enabled/default
+          
+                ln -sfn \
+                  /etc/nginx/sites-available/asistencia-front \
+                  /etc/nginx/sites-enabled/asistencia-front
+          
+                nginx -t
+          
+                systemctl enable nginx
+                systemctl restart nginx
+          
+                echo "Verificando HTTP..."
+          
+                curl --fail --silent --show-error \
+                  http://127.0.0.1/ \
+                  -o /dev/null
+          
+                echo "$ACTUAL_COMMIT" > /opt/frontend-commit.txt
+          
+                touch /opt/frontend-install-success
+                touch /opt/frontend-http-success
+          
+                echo "=== FRONTEND publicado correctamente ==="
           
           runcmd:
             - [bash, /usr/local/sbin/setup-frontend.sh]
@@ -141,10 +207,13 @@ Resources:
 
 Outputs:
   InstanceId:
+    Description: ID de instancia EC2 frontend
     Value: !Ref FrontendEC2
 
   PublicIp:
+    Description: IP publica del frontend
     Value: !GetAtt FrontendEC2.PublicIp
 
   PrivateIp:
+    Description: IP privada del frontend
     Value: !GetAtt FrontendEC2.PrivateIp

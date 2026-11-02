@@ -4,18 +4,25 @@ Description: EC2 Frontend React con cloud-init
 Parameters:
   ProjectName:
     Type: String
+
   VpcId:
     Type: AWS::EC2::VPC::Id
+
   SubnetId:
     Type: AWS::EC2::Subnet::Id
+
   UbuntuAmi:
     Type: AWS::EC2::Image::Id
+
   InstanceType:
     Type: String
+
   VolumeSize:
     Type: Number
+
   SshCidr:
     Type: String
+
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
 
@@ -23,16 +30,26 @@ Resources:
   FrontendSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: SSH laboratorio frontend
+      GroupDescription: SSH y HTTP laboratorio frontend
       VpcId: !Ref VpcId
+
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: !Ref SshCidr
+          Description: SSH laboratorio
+
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP publico - Nginx
+
       SecurityGroupEgress:
         - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
+
       Tags:
         - Key: Project
           Value: !Ref ProjectName
@@ -78,10 +95,13 @@ Resources:
 
 Outputs:
   InstanceId:
+    Description: ID de instancia EC2 frontend
     Value: !Ref FrontendEC2
 
   PublicIp:
+    Description: IP publica del frontend
     Value: !GetAtt FrontendEC2.PublicIp
 
   PrivateIp:
+    Description: IP privada del frontend
     Value: !GetAtt FrontendEC2.PrivateIp
