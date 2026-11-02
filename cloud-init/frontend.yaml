@@ -52,6 +52,21 @@ write_files:
       ACTUAL_COMMIT="$(git rev-parse HEAD)"
       test "$ACTUAL_COMMIT" = "$REPO_COMMIT"
 
+      echo "Configurando swap de 2 GiB..."
+
+      if ! swapon --show=NAME --noheadings | grep -qx "/swapfile"; then
+        if [ ! -f /swapfile ]; then
+          fallocate -l 2G /swapfile
+          chmod 600 /swapfile
+          mkswap /swapfile
+        fi
+
+        swapon /swapfile
+      fi
+
+      free -h
+
+
       echo "Instalando dependencias..."
       npm ci --no-audit --no-fund
 

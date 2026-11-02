@@ -28,7 +28,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 
-        https://s3.us-east-2.amazonaws.com/iac-cloudinit-cfn-170101435970-us-east-2/iac-cloud-init/9e5528cedfd2857190a050b620f04789.template
+        https://s3.us-east-2.amazonaws.com/iac-cloudinit-cfn-170101435970-us-east-2/iac-cloud-init/8f32b8e83f98a549581683e3dee04318.template
       Parameters:
         ProjectName:
           Ref: ProjectName
