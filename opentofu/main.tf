@@ -13,7 +13,7 @@ resource "aws_key_pair" "lab" {
 
 resource "aws_security_group" "frontend" {
   name_prefix = "frontend-sg-"
-  description = "SSH publico - laboratorio temporal"
+  description = "SSH y HTTP - laboratorio"
   vpc_id      = data.aws_vpc.existing.id
 
   ingress {
@@ -22,6 +22,14 @@ resource "aws_security_group" "frontend" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.ssh_cidr]
+  }
+
+  ingress {
+    description = "HTTP publico - Nginx"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -39,7 +47,7 @@ resource "aws_security_group" "frontend" {
 
 resource "aws_security_group" "backend" {
   name_prefix = "backend-sg-"
-  description = "SSH publico - laboratorio temporal"
+  description = "SSH y HTTP - laboratorio"
   vpc_id      = data.aws_vpc.existing.id
 
   ingress {
@@ -48,6 +56,14 @@ resource "aws_security_group" "backend" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.ssh_cidr]
+  }
+
+  ingress {
+    description = "HTTP publico - Nginx"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {

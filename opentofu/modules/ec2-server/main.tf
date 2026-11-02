@@ -19,8 +19,10 @@ resource "aws_instance" "server" {
     var.security_group_id
   ]
 
-  key_name  = var.key_name
-  user_data = var.user_data
+  key_name = var.key_name
+
+  user_data                   = var.user_data
+  user_data_replace_on_change = true
 
   root_block_device {
     volume_size           = var.volume_size
